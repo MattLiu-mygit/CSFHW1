@@ -17,7 +17,8 @@
 #include "apint.h"
 #include "tctest.h"
 
-typedef struct {
+typedef struct
+{
 	ApInt *ap0;
 	ApInt *ap1;
 	ApInt *ap110660361;
@@ -37,10 +38,12 @@ void testAdd(TestObjs *objs);
 void testSub(TestObjs *objs);
 /* TODO: add more test function prototypes */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	TEST_INIT();
 
-	if (argc > 1) {
+	if (argc > 1)
+	{
 		/*
 		 * name of specific test case to execute was provided
 		 * as a command line argument
@@ -60,7 +63,8 @@ int main(int argc, char **argv) {
 	TEST_FINI();
 }
 
-TestObjs *setup(void) {
+TestObjs *setup(void)
+{
 	TestObjs *objs = malloc(sizeof(TestObjs));
 	objs->ap0 = apint_create_from_u64(0UL);
 	objs->ap1 = apint_create_from_u64(1UL);
@@ -71,7 +75,8 @@ TestObjs *setup(void) {
 	return objs;
 }
 
-void cleanup(TestObjs *objs) {
+void cleanup(TestObjs *objs)
+{
 	apint_destroy(objs->ap0);
 	apint_destroy(objs->ap1);
 	apint_destroy(objs->ap110660361);
@@ -81,40 +86,44 @@ void cleanup(TestObjs *objs) {
 	free(objs);
 }
 
-void testCreateFromU64(TestObjs *objs) {
+void testCreateFromU64(TestObjs *objs)
+{
 	ASSERT(0UL == apint_get_bits(objs->ap0, 0));
 	ASSERT(1UL == apint_get_bits(objs->ap1, 0));
 	ASSERT(110660361UL == apint_get_bits(objs->ap110660361, 0));
 	ASSERT(0xFFFFFFFFFFFFFFFFUL == apint_get_bits(objs->max1, 0));
 }
 
-void testHighestBitSet(TestObjs *objs) {
+void testHighestBitSet(TestObjs *objs)
+{
 	ASSERT(-1 == apint_highest_bit_set(objs->ap0));
 	ASSERT(0 == apint_highest_bit_set(objs->ap1));
 	ASSERT(26 == apint_highest_bit_set(objs->ap110660361));
 	ASSERT(63 == apint_highest_bit_set(objs->max1));
 }
 
-void testLshiftN(TestObjs *objs) {
+void testLshiftN(TestObjs *objs)
+{
 	ApInt *result;
-
+	printf("test1 to look for is %d and %lu", objs->ap0->apint_length, objs->ap0->apint_val[1]);
 	result = apint_lshift_n(objs->ap0, 17);
 	ASSERT(0UL == apint_get_bits(result, 0));
 	ASSERT(0UL == apint_get_bits(result, 1));
-	apint_destroy(result);
+	//apint_destroy(result);
 
 	result = apint_lshift_n(objs->ap1, 17);
 	ASSERT(0x20000UL == apint_get_bits(result, 0));
 	ASSERT(0UL == apint_get_bits(result, 1));
-	apint_destroy(result);
+	//apint_destroy(result);
 
 	result = apint_lshift_n(objs->ap110660361, 17);
 	ASSERT(0xD3116120000UL == apint_get_bits(result, 0));
 	ASSERT(0UL == apint_get_bits(result, 1));
-	apint_destroy(result);
+	//apint_destroy(result);
 }
 
-void testCompare(TestObjs *objs) {
+void testCompare(TestObjs *objs)
+{
 	/* 1 > 0 */
 	ASSERT(apint_compare(objs->ap1, objs->ap0) > 0);
 	/* 0 < 1 */
@@ -129,7 +138,8 @@ void testCompare(TestObjs *objs) {
 	ASSERT(apint_compare(objs->ap1, objs->ap110660361) < 0);
 }
 
-void testFormatAsHex(TestObjs *objs) {
+void testFormatAsHex(TestObjs *objs)
+{
 	char *s;
 
 	ASSERT(0 == strcmp("0", (s = apint_format_as_hex(objs->ap0))));
@@ -145,7 +155,8 @@ void testFormatAsHex(TestObjs *objs) {
 	free(s);
 }
 
-void testAdd(TestObjs *objs) {
+void testAdd(TestObjs *objs)
+{
 	ApInt *sum;
 	char *s;
 
@@ -180,7 +191,8 @@ void testAdd(TestObjs *objs) {
 	free(s);
 }
 
-void testSub(TestObjs *objs) {
+void testSub(TestObjs *objs)
+{
 	ApInt *a, *b, *diff;
 	char *s;
 
@@ -212,7 +224,7 @@ void testSub(TestObjs *objs) {
 	b = apint_create_from_hex("9fa0fb165441ade7cb8b17c3ab3653465e09e8078e09631ec8f6fe3a5b301dc");
 	diff = apint_sub(a, b);
 	ASSERT(0 == strcmp("7e35207519b6afc4883c6fdd8898213a367d73b918de95f20766963b0251c622cd3ec4633b691",
-		(s = apint_format_as_hex(diff))));
+										 (s = apint_format_as_hex(diff))));
 	apint_destroy(diff);
 	apint_destroy(b);
 	apint_destroy(a);
