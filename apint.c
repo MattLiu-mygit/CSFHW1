@@ -19,7 +19,7 @@ ApInt *apint_create_from_u64(uint64_t val)
 	ApInt *out = malloc(sizeof(uint64_t) + 16);
 	out->apint_val[0] = val;
 	out->apint_length = 1;
-	printf("\ndoing %ul\n", val);
+	//printf("\ndoing %lu\n", val);
 	//assert(0);
 	return out;
 }
@@ -27,15 +27,11 @@ ApInt *apint_create_from_u64(uint64_t val)
 ApInt *apint_create_from_hex(const char *hex)
 {
 	/* TODO: implement */
-	char *lowerHex = hex;
-	for (int i = 0; i <= strlen(hex); i++)
-	{
-		if (hex[i] >= 65 && hex[i] <= 90)
-			lowerHex[i] = hex[i] + 32;
-	}
-	printf("lowercase is %s\n", lowerHex);
+	ApInt *out = malloc(sizeof(hex) + 16);
+	out->apint_val[0] = hex;
+	out->apint_length = 1;
 	// assert(0);
-	return NULL;
+	return out;
 }
 
 void apint_destroy(ApInt *ap)
@@ -109,12 +105,12 @@ ApInt *apint_lshift(ApInt *ap)
 ApInt *apint_lshift_n(ApInt *ap, unsigned n)
 {
 	/* TODO: implement */
-	printf("\nstarting! %lu\n", ap->apint_val[0]);
+	//printf("\nstarting! %lu\n", ap->apint_val[0]);
 	for (unsigned i = 0; i < n; i++)
 	{
 		ap = apint_lshift(ap);
 	}
-	printf("\nsuccess! %lu\n", ap->apint_val[0]);
+	//printf("\nsuccess! %lu\n", ap->apint_val[0]);
 	// assert(0);
 	return ap;
 }
@@ -122,15 +118,80 @@ ApInt *apint_lshift_n(ApInt *ap, unsigned n)
 char *apint_format_as_hex(ApInt *ap)
 {
 	/* TODO: implement */
-	assert(0);
-	return NULL;
+	//assert(0);
+	printf("\nformatting %lu\n", ap->apint_val[0]);
+	char hex[] = "";
+	//int count = 0;
+	for (int i = 0; i < ap->apint_length; i++)
+	{
+		printf("star\n");
+		uint64_t val = ap->apint_val[i];
+		int mod = pow(16, i + 1);
+		printf("\nmod is %d and val is %lu, %d times\n", mod, val, ap->apint_length);
+		val = val % mod;
+		val = val >> 16 * i;
+		char toAdd;
+		if (val < 10)
+		{
+			toAdd = 48 + val;
+			printf("\nadded %c\n", toAdd);
+			hex[i] = toAdd;
+			printf("\nhex is after %s\n", hex);
+		}
+		else if (val >= 10)
+		{
+			toAdd = 55 + val;
+			strncat(hex, toAdd, 1);
+		}
+	}
+	//printf("\nhex is before %s\n", hex);
+	//hex[ap->apint_length] = '\0';
+	//printf("\nhex is after %s\n", hex);
+	char *out = hex;
+	return out;
 }
 
 ApInt *apint_add(const ApInt *a, const ApInt *b)
 {
+	printf("adding %lu and %lu", a->apint_val[0], b->apint_val[0]);
+	int carry = 0;
+	int max;
+	if (a->apint_length > b->apint_length)
+	{
+		max = a->apint_length;
+	}
+	else
+	{
+		max = b->apint_length;
+	}
+	// ApInt *out = malloc(sizeof(uint64_t) * max + 16);
+	// out->apint_length = max;
+	// for (int i = 0; i < out->apint_length || carry; i++)
+	// {
+	// 	if (i == a->apint_length)
+	// 	{
+	// 		printf("happened");
+	// 	}
+
+	// 	if (i < b->apint_length)
+	// 	{ //handle carryover
+	// 		out->apint_val[i] = *a->apint_val[i] + *b->apint_val[i] + carry;
+	// 	}
+	// 	else
+	// 	{
+	// 		out->apint_val[i] = a->apint_val[i] + carry;
+	// 	}
+	// 	//carry = a->apint_val[i] >= (pow(2, 64) - 1);
+	// 	if (carry)
+	// 	{
+	// 		//out->apint_val[i] -= pow(2, 64) - 1;
+	// 	}
+	// }
+
 	/* TODO: implement */
-	assert(0);
-	return NULL;
+	// assert(0);
+	return a;
+	//return out;
 }
 
 ApInt *apint_sub(const ApInt *a, const ApInt *b)
