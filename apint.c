@@ -119,18 +119,18 @@ char *apint_format_as_hex(ApInt *ap)
 {
 	char *hex = malloc(ap->apint_length * 16 + 1); //find a better replacement
 	int len = 0;
-	printf("\nloop start with length %d\n", ap->apint_length);
+	//printf("\nloop start with length %d\n", ap->apint_length);
 
 	for (int i = 0; i < ap->apint_length; i++)
 	{
-		printf("\nlooped with hex as %s\n", hex);
+		//printf("\nlooped with hex as %s\n", hex);
 		uint64_t val = ap->apint_val[i];
 		int count = 0;
 		do
 		{
 			uint64_t adder;
 			adder = val % 16;
-			printf("\nadder is %lu\n", adder);
+			//printf("\nadder is %lu\n", adder);
 			if (adder < 10)
 			{
 				hex[len] = 48 + adder;
@@ -144,7 +144,7 @@ char *apint_format_as_hex(ApInt *ap)
 			len++;
 		} while (val != 0 || (i < ap->apint_length - 1 && count < 16));
 	}
-	printf("\nloop passed\n");
+	//printf("\nloop passed\n");
 	for (int i = 0; i < len / 2; i++)
 	{
 		char temp = hex[i];
@@ -153,7 +153,7 @@ char *apint_format_as_hex(ApInt *ap)
 	}
 
 	hex[len] = '\0';
-	printf("\nhex is %s\n", hex);
+	//printf("\nhex is %s\n", hex);
 	return hex;
 }
 
@@ -230,20 +230,71 @@ ApInt *apint_add(const ApInt *a, const ApInt *b)
 
 	/* TODO: implement */
 	// assert(0);
-	// free a aand b
 	return out;
 }
 
 ApInt *apint_sub(const ApInt *a, const ApInt *b)
 {
+	// a - b
+	printf("\nsubbing is %lu and %lu\n", a->apint_val[0], b->apint_val[0]);
+	if (a->apint_length < b->apint_length)
+	{
+		return NULL;
+	}
+
+	ApInt *out = malloc(sizeof(uint64_t) * a->apint_length + 16);
+	out->apint_length = a->apint_length;
+	// if right > left, return null
+	int carry = 0;
+	for (int i = 0; i < a->apint_length; i++)
+	{
+		if (i == a->apint_length)
+		{
+			out->apint_val[i] = b->apint_val[i];
+		}
+		else if (i == b->apint_length)
+		{
+			out->apint_val[i] = a->apint_val[i];
+		}
+		else
+		{
+			uint64_t aVal = a->apint_val[i];
+			uint64_t bVal = b->apint_val[i];
+			uint64_t difference = aVal - bVal;
+			carry = difference > aVal;
+
+			out->apint_val[i] = difference + carry * pow(2, 64);
+		}
+	}
 	/* TODO: implement */
-	assert(0);
-	return NULL;
+	// assert(0);
+	return out;
 }
 
 int apint_compare(const ApInt *left, const ApInt *right)
 {
+	if (left->apint_length > right->apint_length)
+	{
+		return 1;
+	}
+	else if (left->apint_length < right->apint_length)
+	{
+		return -1;
+	}
+
+	for (int i = left->apint_length - 1; i >= 0; i--)
+	{
+		if (left->apint_val[i] > right->apint_val[i])
+		{
+			return 1;
+		}
+		if (left->apint_val[i] < right->apint_val[i])
+		{
+			return -1;
+		}
+	}
+
 	/* TODO: implement */
-	assert(0);
+	//assert(0);
 	return 0;
 }
