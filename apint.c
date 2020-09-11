@@ -94,7 +94,7 @@ ApInt *apint_lshift(ApInt *ap)
 	}
 	if (bringOver)
 	{
-		realloc(&ap, sizeof(uint64_t) * (ap->apint_length + 1) + 16);
+		ap = realloc(&ap, sizeof(uint64_t) * (ap->apint_length + 1) + 16);
 		ap->apint_val[ap->apint_length] = 1UL;
 		ap->apint_length = ap->apint_length + 1;
 	}
@@ -117,43 +117,48 @@ ApInt *apint_lshift_n(ApInt *ap, unsigned n)
 
 char *apint_format_as_hex(ApInt *ap)
 {
-	/* TODO: implement */
-	//assert(0);
-	printf("\nformatting %lu\n", ap->apint_val[0]);
-	char hex[] = "";
-	//int count = 0;
+	char *hex = malloc(ap->apint_length * 16 + 1); //find a better replacement
+	int len = 0;
+	printf("\nloop start with length %d\n", ap->apint_length);
+
 	for (int i = 0; i < ap->apint_length; i++)
 	{
-		printf("star\n");
+		printf("\nlooped with hex as %s\n", hex);
 		uint64_t val = ap->apint_val[i];
-		int mod = pow(16, i + 1);
-		printf("\nmod is %d and val is %lu, %d times\n", mod, val, ap->apint_length);
-		val = val % mod;
-		val = val >> 16 * i;
-		char toAdd;
-		if (val < 10)
+		int count = 0;
+		do
 		{
-			toAdd = 48 + val;
-			printf("\nadded %c\n", toAdd);
-			hex[i] = toAdd;
-			printf("\nhex is after %s\n", hex);
-		}
-		else if (val >= 10)
-		{
-			toAdd = 55 + val;
-			strncat(hex, toAdd, 1);
-		}
+			uint64_t adder;
+			adder = val % 16;
+			printf("\nadder is %lu\n", adder);
+			if (adder < 10)
+			{
+				hex[len] = 48 + adder;
+			}
+			else if (adder >= 10)
+			{
+				hex[len] = 55 + adder;
+			}
+			val = val >> 4;
+			count++;
+			len++;
+		} while (val != 0 || (i < ap->apint_length - 1 && count < 16));
 	}
-	//printf("\nhex is before %s\n", hex);
-	//hex[ap->apint_length] = '\0';
-	//printf("\nhex is after %s\n", hex);
-	char *out = hex;
-	return out;
+	printf("\nloop passed\n");
+	for (int i = 0; i < len / 2; i++)
+	{
+		char temp = hex[i];
+		hex[i] = tolower(hex[len - i - 1]);
+		hex[len - i - 1] = tolower(temp);
+	}
+
+	hex[len] = '\0';
+	printf("\nhex is %s\n", hex);
+	return hex;
 }
 
 ApInt *apint_add(const ApInt *a, const ApInt *b)
 {
-	printf("adding %lu and %lu", a->apint_val[0], b->apint_val[0]);
 	int carry = 0;
 	int max;
 	if (a->apint_length > b->apint_length)
@@ -164,34 +169,69 @@ ApInt *apint_add(const ApInt *a, const ApInt *b)
 	{
 		max = b->apint_length;
 	}
-	// ApInt *out = malloc(sizeof(uint64_t) * max + 16);
-	// out->apint_length = max;
-	// for (int i = 0; i < out->apint_length || carry; i++)
-	// {
-	// 	if (i == a->apint_length)
-	// 	{
-	// 		printf("happened");
-	// 	}
+	ApInt *out = malloc(sizeof(uint64_t) * max + 16);
+	out->apint_length = max;
+	for (int i = 0; i < max; i++)
+	{
+		if (i == a->apint_length)
+		{
+			uint64_t bVal = b->apint_val[i];
+			uint64_t sum = bVal + carry;
+			if (sum - bVal != carry)
+			{
+				carry = 1;
+			}
+			else
+			{
+				carry = 0;
+			}
+			out->apint_val[i] = sum;
+		}
+		else if (i == b->apint_length)
+		{
+			uint64_t aVal = a->apint_val[i];
+			uint64_t sum = aVal + carry;
+			if (sum - aVal != carry)
+			{
+				carry = 1;
+			}
+			else
+			{
+				carry = 0;
+			}
+			out->apint_val[i] = aVal + carry;
+		}
+		else
+		{
+			uint64_t aVal = a->apint_val[i];
+			uint64_t bVal = b->apint_val[i];
+			uint64_t sum = aVal + bVal + carry;
+			uint64_t check = sum < aVal + carry;
 
-	// 	if (i < b->apint_length)
-	// 	{ //handle carryover
-	// 		out->apint_val[i] = *a->apint_val[i] + *b->apint_val[i] + carry;
-	// 	}
-	// 	else
-	// 	{
-	// 		out->apint_val[i] = a->apint_val[i] + carry;
-	// 	}
-	// 	//carry = a->apint_val[i] >= (pow(2, 64) - 1);
-	// 	if (carry)
-	// 	{
-	// 		//out->apint_val[i] -= pow(2, 64) - 1;
-	// 	}
-	// }
+			// if (sum - aVal - carry != bVal)
+			if (check)
+			{
+				carry = 1;
+			}
+			else
+			{
+				carry = 0;
+			}
+			out->apint_val[i] = sum;
+		}
+	}
+
+	if (carry)
+	{
+		out = realloc(out, sizeof(uint64_t) * (out->apint_length + 1) + 16);
+		out->apint_val[out->apint_length] = 1UL;
+		out->apint_length = out->apint_length + 1;
+	}
 
 	/* TODO: implement */
 	// assert(0);
-	return a;
-	//return out;
+	// free a aand b
+	return out;
 }
 
 ApInt *apint_sub(const ApInt *a, const ApInt *b)
