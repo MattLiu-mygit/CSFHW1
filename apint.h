@@ -14,7 +14,7 @@ typedef struct
 {
 	/* TODO: representation */
 	int apint_length;
-	uint64_t *apint_val[];
+	uint64_t apint_val[];
 } ApInt;
 
 /* Constructors and destructors */

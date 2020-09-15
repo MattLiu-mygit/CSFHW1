@@ -105,21 +105,21 @@ void testHighestBitSet(TestObjs *objs)
 void testLshiftN(TestObjs *objs)
 {
 	ApInt *result;
-	printf("test1 to look for is %d and %lu", objs->ap0->apint_length, objs->ap0->apint_val[1]);
+	//printf("test1 to look for is %d and %lu", objs->ap0->apint_length, objs->ap0->apint_val[1]);
 	result = apint_lshift_n(objs->ap0, 17);
 	ASSERT(0UL == apint_get_bits(result, 0));
 	ASSERT(0UL == apint_get_bits(result, 1));
-	//apint_destroy(result);
+	apint_destroy(result);
 
 	result = apint_lshift_n(objs->ap1, 17);
 	ASSERT(0x20000UL == apint_get_bits(result, 0));
 	ASSERT(0UL == apint_get_bits(result, 1));
-	//apint_destroy(result);
+	apint_destroy(result);
 
 	result = apint_lshift_n(objs->ap110660361, 17);
 	ASSERT(0xD3116120000UL == apint_get_bits(result, 0));
 	ASSERT(0UL == apint_get_bits(result, 1));
-	//apint_destroy(result);
+	apint_destroy(result);
 }
 
 void testCompare(TestObjs *objs)
@@ -189,6 +189,12 @@ void testAdd(TestObjs *objs)
 	ASSERT(0 == strcmp("10000000000000000", (s = apint_format_as_hex(sum))));
 	apint_destroy(sum);
 	free(s);
+
+	// sum = apint_add(objs->max1, objs->ap1);
+	// sum = apint_add(sum, objs->ap1);
+	// ASSERT(0 == strcmp("10000000000000001", (s = apint_format_as_hex(sum))));
+	// apint_destroy(sum);
+	// free(s);
 }
 
 void testSub(TestObjs *objs)
