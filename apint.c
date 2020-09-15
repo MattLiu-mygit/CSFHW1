@@ -28,24 +28,23 @@ ApInt *apint_create_from_hex(const char *hex)
 	int lenMax = strlen(hex);
 	fragNum = lenMax / 16;
 	fragNum = fragNum % 1 != 0 ? fragNum + 2 : fragNum + 1;
-	ApInt *out = malloc(sizeof(uint64_t) * fragNum + sizeof(int) + 4);
+	ApInt *out = malloc(sizeof(uint64_t) * fragNum + sizeof(int) + 16);
 	out->apint_length = fragNum;
 
 	int size = 0;
 	for (int i = 0; i < (int)fragNum; i++)
 	{
 		int mod = 16 * i;
-		char *hexFrag = (char *)malloc(sizeof(char) * (lenMax - mod >= 16 ? 16 : lenMax - mod));
-		printf("%p\n", hexFrag);
+		char *hexFrag = malloc((lenMax - mod > 16 ? 16 : lenMax - mod + 1));
 		int strLoc = lenMax > 16 + mod ? lenMax - mod - 16 : 0;
 		size = (lenMax > 16 + mod ? 16 : lenMax - mod);
 		strncpy(hexFrag, hex + strLoc, size);
 		out->apint_val[i] = 0;
 		int start = (lenMax > 16 + mod ? 15 : (lenMax - mod - 1));
+		hexFrag[(lenMax - mod > 16 ? 16 : lenMax - mod)] = '\0';
 		for (int n = start; n >= 0; n--)
 		{
 			int power = start - n;
-
 			uint64_t val = 0.0;
 			if (hexFrag[n] >= '0' && hexFrag[n] <= '9')
 			{
@@ -61,7 +60,9 @@ ApInt *apint_create_from_hex(const char *hex)
 			}
 			out->apint_val[i] += val * (uint64_t)pow(16, power);
 		}
+		free(hexFrag);
 	}
+
 	return out;
 }
 
@@ -114,7 +115,7 @@ ApInt *apint_lshift(ApInt *ap)
 	}
 	if (bringOver)
 	{
-		ap = realloc(&ap, sizeof(uint64_t) * (ap->apint_length + 1) + sizeof(ap->apint_length));
+		ap = realloc(ap, sizeof(uint64_t) * (ap->apint_length + 1) + sizeof(ap->apint_length));
 		ap->apint_val[ap->apint_length] = 1UL;
 		ap->apint_length = ap->apint_length + 1;
 	}
@@ -123,16 +124,54 @@ ApInt *apint_lshift(ApInt *ap)
 
 ApInt *apint_lshift_n(ApInt *ap, unsigned n)
 {
-	// make a seperate array and length
-	for (int i = 0; i < (int)n; i++)
+	int outLength = ap->apint_length;
+	uint64_t outArray[outLength];
+	for (int i = 0; i < outLength; i++)
 	{
-		ap = apint_add(ap, ap); // This isn't looping apint_lshift
+		outArray[i] = ap->apint_val[i];
 	}
-	return ap;
+
+	for (int g = 0; g < (int)n; g++)
+	{
+		int carry = 0;
+
+		ApInt *out = malloc(sizeof(ap));
+		out->apint_length = outLength;
+		for (int i = 0; i < outLength; i++)
+		{
+			out->apint_val[i] = outArray[i];
+		}
+		for (int i = 0; i < outLength; i++)
+		{
+			uint64_t sum = outArray[i] * 2 + carry;
+			carry = outArray[i] > UINT64_MAX - outArray[i];
+			out->apint_val[i] = sum;
+		}
+
+		if (carry)
+		{
+			out->apint_val[out->apint_length] = 1UL;
+			out->apint_length = out->apint_length + 1;
+		}
+		outLength = out->apint_length;
+		for (int i = 0; i < outLength; i++)
+		{
+			outArray[i] = out->apint_val[i];
+		}
+		free(out);
+	}
+	ApInt *out = malloc(sizeof(outLength) + sizeof(outArray));
+	out->apint_length = outLength;
+	for (int i = 0; i < outLength; i++)
+	{
+		out->apint_val[i] = outArray[i];
+	}
+	return out;
 }
 
 char *apint_format_as_hex(ApInt *ap)
 {
+	printf("formatting\n");
 	char *hex = malloc(ap->apint_length * 16 + 1);
 	int len = 0;
 
@@ -180,7 +219,8 @@ ApInt *apint_add(const ApInt *a, const ApInt *b)
 	{
 		max = b->apint_length;
 	}
-	ApInt *out = malloc(sizeof(uint64_t) * max + 20);
+
+	ApInt *out = malloc(sizeof(a));
 	out->apint_length = max;
 	for (int i = 0; i < max; i++)
 	{
@@ -209,7 +249,6 @@ ApInt *apint_add(const ApInt *a, const ApInt *b)
 
 	if (carry)
 	{
-		//out = realloc(out, sizeof(uint64_t) * (out->apint_length + 1) + 16);
 		out->apint_val[out->apint_length] = 1UL;
 		out->apint_length = out->apint_length + 1;
 	}
@@ -220,7 +259,7 @@ ApInt *apint_add(const ApInt *a, const ApInt *b)
 ApInt *apint_sub(const ApInt *a, const ApInt *b)
 {
 
-	ApInt *out = malloc(sizeof(uint64_t) * a->apint_length + 8);
+	ApInt *out = malloc(sizeof(a->apint_length) + sizeof(uint64_t) * a->apint_length);
 	out->apint_length = a->apint_length;
 	if (a->apint_length < b->apint_length)
 	{
@@ -261,6 +300,10 @@ ApInt *apint_sub(const ApInt *a, const ApInt *b)
 
 int apint_compare(const ApInt *left, const ApInt *right)
 {
+	if (left == NULL || right == NULL)
+	{
+		return NULL;
+	}
 	if (left->apint_length > right->apint_length)
 	{
 		return 1;
