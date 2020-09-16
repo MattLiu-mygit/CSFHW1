@@ -2,6 +2,8 @@
  * CSF Assignment 1
  * Arbitrary-precision integer data type
  * Header file
+ * Matthew Liu
+ * mliu78@jh.edu
  */
 
 #ifndef APINT_H
@@ -12,9 +14,8 @@
 
 typedef struct
 {
-	/* TODO: representation */
-	int apint_length;
-	uint64_t apint_val[];
+	int apintLength;
+	uint64_t apintVal[];
 } ApInt;
 
 /* Constructors and destructors */
