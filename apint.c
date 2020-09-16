@@ -51,7 +51,7 @@ ApInt *apint_create_from_hex(const char *hex)
 	uint64_t fragNum = lenMax / 16;
 	fragNum = fragNum % 1 != 0 ? fragNum + 2 : fragNum + 1;
 
-	ApInt *out = malloc(sizeof(uint64_t) * fragNum + sizeof(int) + 16);
+	ApInt *out = calloc(1, sizeof(uint64_t) * (fragNum + 1) * 100 + 16);
 	out->apintLength = fragNum;
 
 	// Loops through each fragment, inserting numbers into the ApInt array.
@@ -62,7 +62,7 @@ ApInt *apint_create_from_hex(const char *hex)
 		int mod = 16 * i;
 
 		// Makes a substring for the hex fragment to be converted to uint64_t
-		char *hexFrag = malloc((lenMax - mod > 16 ? 16 + 1 : lenMax - mod + 1));
+		char *hexFrag = malloc((lenMax - mod > 16 ? 10 * 16 + 1 : 10 * lenMax - mod + 1));
 		int strLoc = lenMax > 16 + mod ? lenMax - mod - 16 : 0;
 		size = (lenMax > 16 + mod ? 16 : lenMax - mod);
 		strncpy(hexFrag, hex + strLoc, size);
@@ -368,7 +368,7 @@ ApInt *apint_add(const ApInt *a, const ApInt *b)
  */
 ApInt *apint_sub(const ApInt *a, const ApInt *b)
 {
-	ApInt *out = malloc(sizeof(a->apintLength) * 10000 + sizeof(uint64_t) * 10000);
+	ApInt *out = malloc(sizeof(a->apintLength) * 1000 + sizeof(uint64_t) * 1000);
 	out->apintLength = a->apintLength;
 
 	// If the right is greater than the left by at least a factor of uint64, the difference must be

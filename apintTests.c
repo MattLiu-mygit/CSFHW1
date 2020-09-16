@@ -32,6 +32,7 @@ typedef struct
 	ApInt *apHex0;
 	ApInt *apHexMaxPlusOne;
 	ApInt *apHexDoubleMax;
+	ApInt *apHex10Max;
 } TestObjs;
 
 TestObjs *setup(void);
@@ -85,6 +86,7 @@ TestObjs *setup(void)
 	objs->apHex0 = apint_create_from_hex("0");
 	objs->apHexMaxPlusOne = apint_create_from_hex("10000000000000000");
 	objs->apHexDoubleMax = apint_create_from_hex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+	objs->apHex10Max = apint_create_from_hex("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
 	return objs;
 }
@@ -100,6 +102,7 @@ void cleanup(TestObjs *objs)
 	apint_destroy(objs->apHex0);
 	apint_destroy(objs->apHexMaxPlusOne);
 	apint_destroy(objs->apHexDoubleMax);
+	apint_destroy(objs->apHex10Max);
 
 	free(objs);
 }
@@ -121,6 +124,9 @@ void testCreateFromHex(TestObjs *objs)
 	ASSERT(0UL == apint_get_bits(objs->apHex0, 0));
 	ASSERT(0UL == apint_get_bits(objs->apHexMaxPlusOne, 0));
 	ASSERT(1UL == apint_get_bits(objs->apHexMaxPlusOne, 1));
+	ASSERT(0xffffffffffffffffUL == apint_get_bits(objs->apHex10Max, 0));
+	ASSERT(0xffffffffffffffffUL == apint_get_bits(objs->apHex10Max, 5));
+	ASSERT(0xffffffffffffffffUL == apint_get_bits(objs->apHex10Max, 9));
 }
 
 void testHighestBitSet(TestObjs *objs)
@@ -340,7 +346,7 @@ void testAdd(TestObjs *objs)
 void testSub(TestObjs *objs)
 {
 	//	printf("\ntest format started\n");
-	ApInt *a, *b, *diff;
+	ApInt *diff;
 	char *s;
 
 	/* subtracting 1 from ffffffffffffffff is fffffffffffffffe */
@@ -367,8 +373,8 @@ void testSub(TestObjs *objs)
 	ASSERT(NULL == apint_sub(objs->ap0, objs->ap1));
 
 	/* test involving larger values */
-	a = apint_create_from_hex("7e35207519b6b06429378631ca460905c19537644f31dc50114e9dc90bb4e4ebc43cfebe6b86d");
-	b = apint_create_from_hex("9fa0fb165441ade7cb8b17c3ab3653465e09e8078e09631ec8f6fe3a5b301dc");
+	ApInt *a = apint_create_from_hex("7e35207519b6b06429378631ca460905c19537644f31dc50114e9dc90bb4e4ebc43cfebe6b86d");
+	ApInt *b = apint_create_from_hex("9fa0fb165441ade7cb8b17c3ab3653465e09e8078e09631ec8f6fe3a5b301dc");
 	diff = apint_sub(a, b);
 	ASSERT(0 == strcmp("7e35207519b6afc4883c6fdd8898213a367d73b918de95f20766963b0251c622cd3ec4633b691",
 										 (s = apint_format_as_hex(diff))));
